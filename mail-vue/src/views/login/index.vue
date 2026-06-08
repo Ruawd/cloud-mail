@@ -44,9 +44,16 @@
           <el-button class="btn" type="primary" @click="submit" :loading="loginLoading"
           >{{ $t('loginBtn') }}
           </el-button>
-          <el-button class="btn" v-if="settingStore.settings.linuxdoSwitch"  style="margin-top: 10px"  @click="linuxDoLogin">
-            <el-avatar src="/image/linuxdo.webp" :size="18" style="margin-right: 10px" />LinuxDo
-          </el-button>
+          <div class="oauth-actions" v-if="hasOAuthProviders">
+            <el-button class="oauth-btn casdoor-btn" v-if="settingStore.settings.casdoorSwitch" @click="casdoorLogin">
+              <Icon icon="mdi:shield-account-outline" width="20" height="20" />
+              <span>meow auth</span>
+            </el-button>
+            <el-button class="oauth-btn" v-if="settingStore.settings.linuxdoSwitch" @click="linuxDoLogin">
+              <el-avatar src="/image/linuxdo.webp" :size="18" />
+              <span>LinuxDo</span>
+            </el-button>
+          </div>
         </div>
         <div v-show="show !== 'login'">
           <el-input :class="!hideLoginDomain ? 'email-input' : ''" v-model="registerForm.email" type="text" :placeholder="$t('emailAccount')"
@@ -94,9 +101,16 @@
           <el-button class="btn" style="margin: 0" type="primary" @click="submitRegister" :loading="registerLoading"
           >{{ $t('regBtn') }}
           </el-button>
-          <el-button v-if="settingStore.settings.linuxdoSwitch" class="btn" style="margin-top: 10px"  @click="linuxDoLogin">
-            <el-avatar src="/image/linuxdo.webp" :size="18" style="margin-right: 10px" />LinuxDo
-          </el-button>
+          <div class="oauth-actions" v-if="hasOAuthProviders">
+            <el-button class="oauth-btn casdoor-btn" v-if="settingStore.settings.casdoorSwitch" @click="casdoorLogin">
+              <Icon icon="mdi:shield-account-outline" width="20" height="20" />
+              <span>meow auth</span>
+            </el-button>
+            <el-button class="oauth-btn" v-if="settingStore.settings.linuxdoSwitch" @click="linuxDoLogin">
+              <el-avatar src="/image/linuxdo.webp" :size="18" />
+              <span>LinuxDo</span>
+            </el-button>
+          </div>
         </div>
         <template v-if="settingStore.settings.register === 0">
           <div class="switch" @click="show = 'register'" v-if="show === 'login'">{{ $t('noAccount') }}
@@ -162,7 +176,7 @@ import {cvtR2Url} from "@/utils/convert.js";
 import {loginUserInfo} from "@/request/my.js";
 import {permsToRouter} from "@/perm/perm.js";
 import {useI18n} from "vue-i18n";
-import {oauthBindUser, oauthLinuxDoLogin} from "@/request/ouath.js";
+import {oauthBindUser, oauthCasdoorLogin, oauthLinuxDoLogin} from "@/request/ouath.js";
 
 const {t} = useI18n();
 const accountStore = useAccountStore();
@@ -244,6 +258,7 @@ const loginDarkenFactor = computed(() => {
 })
 
 const hideLoginDomain = computed(() => settingStore.settings.loginDomain === 1)
+const hasOAuthProviders = computed(() => settingStore.settings.linuxdoSwitch || settingStore.settings.casdoorSwitch)
 
 const background = computed(() => {
   const bg = settingStore.settings.background
@@ -274,22 +289,65 @@ const getEmailName = (email) => {
 
 function linuxDoLogin() {
   const clientId = settingStore.settings.linuxdoClientId
-  const redirectUri = encodeURIComponent(settingStore.settings.linuxdoCallbackUrl)
-  window.location.href =
-      `https://connect.linux.do/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid+profile+email`
+  const callbackUrl = settingStore.settings.linuxdoCallbackUrl
+
+  if (!clientId || !callbackUrl) {
+    showOAuthConfigError()
+    return
+  }
+
+  const url = new URL('https://connect.linux.do/oauth2/authorize')
+  url.searchParams.set('client_id', clientId)
+  url.searchParams.set('redirect_uri', callbackUrl)
+  url.searchParams.set('response_type', 'code')
+  url.searchParams.set('scope', 'openid profile email')
+  url.searchParams.set('state', 'linuxdo')
+  window.location.href = url.toString()
 }
 
-linuxDoGetUser();
+function casdoorLogin() {
+  const endpoint = (settingStore.settings.casdoorServerUrl || '').replace(/\/+$/, '')
+  const clientId = settingStore.settings.casdoorClientId
+  const callbackUrl = settingStore.settings.casdoorCallbackUrl
 
-async function linuxDoGetUser() {
+  if (!endpoint || !clientId || !callbackUrl) {
+    showOAuthConfigError()
+    return
+  }
+
+  const url = new URL(`${endpoint}/login/oauth/authorize`)
+  url.searchParams.set('client_id', clientId)
+  url.searchParams.set('redirect_uri', callbackUrl)
+  url.searchParams.set('response_type', 'code')
+  url.searchParams.set('scope', 'openid profile email')
+  url.searchParams.set('state', 'casdoor')
+  window.location.href = url.toString()
+}
+
+oauthGetUser();
+
+async function oauthGetUser() {
 
   const params = new URLSearchParams(window.location.search)
   const code = params.get('code')
+  const state = params.get('state')
 
   if (code) {
+    const provider = state === 'casdoor' ? 'casdoor' : 'linuxdo'
+
+    if (provider === 'casdoor' && !settingStore.settings.casdoorSwitch) {
+      cleanOAuthUrl()
+      return
+    }
+
+    if (provider === 'linuxdo' && !settingStore.settings.linuxdoSwitch) {
+      cleanOAuthUrl()
+      return
+    }
 
     oauthLoading.value = true
-    oauthLinuxDoLogin(code).then(data => {
+    const loginRequest = provider === 'casdoor' ? oauthCasdoorLogin : oauthLinuxDoLogin
+    loginRequest(code).then(data => {
 
       bindForm.oauthUserId = data.userInfo.oauthUserId;
 
@@ -311,8 +369,20 @@ async function linuxDoGetUser() {
     })
   }
 
+  cleanOAuthUrl()
+}
+
+function cleanOAuthUrl() {
   const cleanUrl = window.location.origin + window.location.pathname
   window.history.replaceState({}, '', cleanUrl)
+}
+
+function showOAuthConfigError() {
+  ElMessage({
+    message: 'OAuth is not configured',
+    type: 'error',
+    plain: true,
+  })
 }
 
 function bind() {
@@ -646,6 +716,48 @@ function submitRegister() {
     height: 36px;
     width: 100%;
     border-radius: 6px;
+  }
+
+  .oauth-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-top: 10px;
+  }
+
+  .oauth-btn {
+    min-height: 44px;
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    border-radius: 6px;
+    font-weight: 700;
+    transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+  }
+
+  .oauth-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--el-box-shadow-light);
+  }
+
+  .oauth-btn:focus-visible {
+    outline: 2px solid var(--el-color-primary);
+    outline-offset: 2px;
+  }
+
+  .casdoor-btn {
+    border-color: #8f3a2f;
+    background: #8f3a2f;
+    color: #fffdf8;
+  }
+
+  .casdoor-btn:hover,
+  .casdoor-btn:focus {
+    border-color: #7d3027;
+    background: #7d3027;
+    color: #fffdf8;
   }
 
   .form-desc {

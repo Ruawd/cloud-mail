@@ -14,6 +14,10 @@ const oauthService = {
 
 		const oauthRow = await this.getById(c, oauthUserId);
 
+		if (!oauthRow) {
+			throw new BizError('OAuth user not found')
+		}
+
 		let userRow = await userService.selectByIdIncludeDel(c, oauthRow.userId);
 
 		if (userRow) {
@@ -85,6 +89,78 @@ const oauthService = {
 		return { userInfo: oauthRow, token: JwtToken }
 	},
 
+	async casdoorLogin(c, params) {
+
+		const { code } = params;
+
+		if (!code) {
+			throw new BizError('Missing Casdoor authorization code')
+		}
+
+		const endpoint = this.casdoorEndpoint(c);
+		const redirectUri = c.env.casdoor_callback_url;
+
+		if (!endpoint || !c.env.casdoor_client_id || !c.env.casdoor_client_secret || !redirectUri) {
+			throw new BizError('Casdoor is not configured')
+		}
+
+		const tokenRes = await fetch(`${endpoint}/api/login/oauth/access_token`, {
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				grant_type: 'authorization_code',
+				client_id: c.env.casdoor_client_id,
+				client_secret: c.env.casdoor_client_secret,
+				code,
+				redirect_uri: redirectUri
+			})
+		})
+
+		const token = await this.parseJson(tokenRes);
+
+		if (!tokenRes.ok || !token.access_token) {
+			throw new BizError(token.error_description || token.error || tokenRes.statusText)
+		}
+
+		const userRes = await fetch(`${endpoint}/api/userinfo`, {
+			headers: {
+				Authorization: 'Bearer ' + token.access_token
+			}
+		});
+
+		const casdoorUser = await this.parseJson(userRes);
+
+		if (!userRes.ok) {
+			throw new BizError(casdoorUser.message || userRes.statusText)
+		}
+
+		const oauthId = casdoorUser.sub || casdoorUser.id || casdoorUser.name || casdoorUser.email;
+
+		if (!oauthId) {
+			throw new BizError('Casdoor user id is missing')
+		}
+
+		const userInfo = {
+			oauthUserId: `casdoor:${oauthId}`,
+			username: casdoorUser.preferred_username || casdoorUser.name || casdoorUser.email || String(oauthId),
+			name: casdoorUser.displayName || casdoorUser.display_name || casdoorUser.name || casdoorUser.email || '',
+			avatar: casdoorUser.picture || casdoorUser.avatar || casdoorUser.avatar_url || '',
+			active: 0,
+			silenced: 0,
+			trustLevel: 0
+		}
+
+		const oauthRow = await this.saveUser(c, userInfo);
+		const userRow = await userService.selectByIdIncludeDel(c, oauthRow.userId);
+
+		if (!userRow) {
+			return { userInfo: oauthRow, token: null }
+		}
+
+		const jwtToken = await loginService.login(c, { email: userRow.email, password: null }, true);
+		return { userInfo: oauthRow, token: jwtToken }
+	},
+
 	async saveUser(c, userInfo) {
 
 		const userInfoRow = await this.getById(c, userInfo.oauthUserId);
@@ -99,6 +175,18 @@ const oauthService = {
 
 	async getById(c, oauthUserId) {
 		return await orm(c).select().from(oauth).where(eq(oauth.oauthUserId, oauthUserId)).get();
+	},
+
+	casdoorEndpoint(c) {
+		return (c.env.casdoor_server_url || '').replace(/\/+$/, '');
+	},
+
+	async parseJson(res) {
+		try {
+			return await res.json();
+		} catch (error) {
+			return {};
+		}
 	},
 
 	async deleteByUserId(c, userId) {

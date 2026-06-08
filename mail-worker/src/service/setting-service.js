@@ -10,6 +10,9 @@ import {t} from '../i18n/i18n'
 import verifyRecordService from './verify-record-service';
 import userContext from '../security/user-context';
 
+const envSwitch = (value) => value === true || value === 'true';
+const trimUrl = (value) => (value || '').replace(/\/+$/, '');
+
 const settingService = {
 
 	async refresh(c) {
@@ -49,16 +52,7 @@ const settingService = {
 		setting.domainList = domainList;
 
 
-		let linuxdoSwitch = c.env.linuxdo_switch;
 		let projectLink = c.env.project_link;
-
-		if (typeof linuxdoSwitch === 'string' && linuxdoSwitch === 'true') {
-			linuxdoSwitch = true
-		} else if (linuxdoSwitch === true) {
-			linuxdoSwitch = true
-		} else {
-			linuxdoSwitch = false
-		}
 
 		if (typeof projectLink === 'string' && projectLink === 'false') {
 			projectLink = false
@@ -72,7 +66,11 @@ const settingService = {
 
 		setting.linuxdoClientId = c.env.linuxdo_client_id;
 		setting.linuxdoCallbackUrl = c.env.linuxdo_callback_url;
-		setting.linuxdoSwitch = linuxdoSwitch;
+		setting.linuxdoSwitch = envSwitch(c.env.linuxdo_switch);
+		setting.casdoorServerUrl = trimUrl(c.env.casdoor_server_url);
+		setting.casdoorClientId = c.env.casdoor_client_id;
+		setting.casdoorCallbackUrl = c.env.casdoor_callback_url;
+		setting.casdoorSwitch = envSwitch(c.env.casdoor_switch);
 
 		setting.emailPrefixFilter = setting.emailPrefixFilter.split(",").filter(Boolean);
 
@@ -237,6 +235,10 @@ const settingService = {
 			linuxdoClientId: settingRow.linuxdoClientId,
 			linuxdoCallbackUrl: settingRow.linuxdoCallbackUrl,
 			linuxdoSwitch: settingRow.linuxdoSwitch,
+			casdoorServerUrl: settingRow.casdoorServerUrl,
+			casdoorClientId: settingRow.casdoorClientId,
+			casdoorCallbackUrl: settingRow.casdoorCallbackUrl,
+			casdoorSwitch: settingRow.casdoorSwitch,
 			minEmailPrefix: settingRow.minEmailPrefix,
 			projectLink: settingRow.projectLink
 		};

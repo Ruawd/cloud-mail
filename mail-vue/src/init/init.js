@@ -34,6 +34,8 @@ export async function init() {
             loginOpacity: 1.00,
             loginDarkenFactor: 0,
             domainList: ['pu.edu.rs'],
+            linuxdoSwitch: false,
+            casdoorSwitch: false,
         };
 
         settingStore.settings = schoolSetting;

@@ -49,5 +49,11 @@ linuxdo_client_secret = "${LINUXDO_CLIENT_SECRET}"
 linuxdo_callback_url = "${LINUXDO_CALLBACK_URL}"
 linuxdo_switch = "${LINUXDO_SWITCH}"
 
+casdoor_server_url = "${CASDOOR_SERVER_URL}"
+casdoor_client_id = "${CASDOOR_CLIENT_ID}"
+casdoor_client_secret = "${CASDOOR_CLIENT_SECRET}"
+casdoor_callback_url = "${CASDOOR_CALLBACK_URL}"
+casdoor_switch = "${CASDOOR_SWITCH}"
+
 [build]
 command = "pnpm --prefix ../mail-vue install && pnpm --prefix ../mail-vue run build"

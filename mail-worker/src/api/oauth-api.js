@@ -7,6 +7,11 @@ app.post('/oauth/linuxDo/login', async (c) => {
 	return c.json(result.ok(loginInfo))
 });
 
+app.post('/oauth/casdoor/login', async (c) => {
+	const loginInfo = await oauthService.casdoorLogin(c, await c.req.json());
+	return c.json(result.ok(loginInfo))
+});
+
 app.put('/oauth/bindUser', async (c) => {
 	const loginInfo = await oauthService.bindUser(c, await c.req.json());
 	return c.json(result.ok(loginInfo))

@@ -4,6 +4,10 @@ export function oauthLinuxDoLogin(code) {
     return http.post('/oauth/linuxDo/login',{code})
 }
 
+export function oauthCasdoorLogin(code) {
+    return http.post('/oauth/casdoor/login',{code})
+}
+
 export function oauthBindUser(form) {
     return http.put('/oauth/bindUser', form)
 }
