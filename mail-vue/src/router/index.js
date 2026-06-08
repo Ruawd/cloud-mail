@@ -55,6 +55,11 @@ const routes = [
 
     },
     {
+        path: '/school',
+        name: 'school',
+        component: () => import('@/views/school/index.vue')
+    },
+    {
         path: '/login',
         name: 'login',
         component: () => import('@/views/login/index.vue')
@@ -100,7 +105,7 @@ router.beforeEach((to, from, next) => {
 
     const token = localStorage.getItem('token')
 
-    if (!token && to.name !== 'login') {
+    if (!token && !['login', 'school'].includes(to.name)) {
         return next({name: 'login'})
     }
 

@@ -23,6 +23,25 @@ export async function init() {
 
     i18n.global.locale.value = settingStore.lang
 
+    const currentPath = window.location.pathname.replace(/\/+$/, '');
+    const isSchoolPortal = currentPath === '/school';
+
+    if (isSchoolPortal) {
+        const schoolSetting = {
+            ...settingStore.settings,
+            title: 'Pannonian University Mail',
+            r2Domain: '',
+            loginOpacity: 1.00,
+            loginDarkenFactor: 0,
+            domainList: ['pu.edu.rs'],
+        };
+
+        settingStore.settings = schoolSetting;
+        settingStore.domainList = schoolSetting.domainList;
+        document.title = schoolSetting.title;
+        return;
+    }
+
     let setting = null;
 
     if (token) {

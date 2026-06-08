@@ -6,6 +6,11 @@
         <div>{{settingStore.settings.title}}</div>
       </div>
       <el-menu :collapse="false" text-color="#fff" active-text-color="#fff" style="margin-top: 10px">
+        <el-menu-item @click="router.push({name: 'school'})" index="school"
+                      :class="route.name === 'school' ? 'choose-item' : ''">
+          <Icon icon="mdi:school-outline" width="20" height="20" />
+          <span class="menu-name" style="margin-left: 21px">PU Portal</span>
+        </el-menu-item>
         <el-menu-item @click="router.push({name: 'email'})" index="email"
                       :class="route.meta.name === 'email' ? 'choose-item' : ''">
           <Icon icon="hugeicons:mailbox-01" width="20" height="20" />
