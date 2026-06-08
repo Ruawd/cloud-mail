@@ -32,11 +32,11 @@ jobs:
       LINUXDO_CLIENT_SECRET: ${{ secrets.LINUXDO_CLIENT_SECRET || vars.LINUXDO_CLIENT_SECRET }}
       LINUXDO_CALLBACK_URL: ${{ secrets.LINUXDO_CALLBACK_URL || vars.LINUXDO_CALLBACK_URL }}
       LINUXDO_SWITCH: ${{ secrets.LINUXDO_SWITCH || vars.LINUXDO_SWITCH }}
-      CASDOOR_SERVER_URL: ${{ secrets.CASDOOR_SERVER_URL || vars.CASDOOR_SERVER_URL }}
+      CASDOOR_SERVER_URL: ${{ secrets.CASDOOR_SERVER_URL || vars.CASDOOR_SERVER_URL || 'https://casdoor.ruawd.de' }}
       CASDOOR_CLIENT_ID: ${{ secrets.CASDOOR_CLIENT_ID || vars.CASDOOR_CLIENT_ID }}
       CASDOOR_CLIENT_SECRET: ${{ secrets.CASDOOR_CLIENT_SECRET || vars.CASDOOR_CLIENT_SECRET }}
       CASDOOR_CALLBACK_URL: ${{ secrets.CASDOOR_CALLBACK_URL || vars.CASDOOR_CALLBACK_URL }}
-      CASDOOR_SWITCH: ${{ secrets.CASDOOR_SWITCH || vars.CASDOOR_SWITCH }}
+      CASDOOR_SWITCH: ${{ secrets.CASDOOR_SWITCH || vars.CASDOOR_SWITCH || 'true' }}
 
 
     outputs:
@@ -110,6 +110,10 @@ jobs:
           
           if [ -z "$PROJECT_LINK" ]; then
             sed -i '/^project_link = /d' "$CONFIG_FILE"
+          fi
+
+          if [ -z "$CASDOOR_CALLBACK_URL" ] && [ -n "$CUSTOM_DOMAIN" ]; then
+            CASDOOR_CALLBACK_URL="https://${CUSTOM_DOMAIN}/login"
           fi
           
           if [ -z "$LINUXDO_CLIENT_ID" ] || [ -z "$LINUXDO_CLIENT_SECRET" ]; then

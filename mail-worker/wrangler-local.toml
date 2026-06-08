@@ -42,7 +42,7 @@ domain = ["test.local", "example.local"]
 admin = "admin@test.local"
 # JWT 密钥（可以是任意字符串）
 jwt_secret = "local-dev-jwt-secret-key-12345"
-casdoor_server_url = ""
+casdoor_server_url = "https://casdoor.ruawd.de"
 casdoor_client_id = ""
 casdoor_client_secret = ""
 casdoor_callback_url = ""
