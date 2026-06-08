@@ -1,26 +1,43 @@
 <p align="center">
-  <img src="doc/demo/logo.png" width="80px" />
+    <img src="doc/demo/logo.png" width="80px" />
+    <h1 align="center">Cloud Mail</h1>
+    <p align="center">基于 Cloudflare 的简约响应式邮箱服务，支持邮件发送、附件收发 🎉</p> 
+    <p align="center">
+        简体中文 | <a href="/README-en.md" style="margin-left: 5px">English </a>
+    </p>
+    <p align="center">
+        <a href="https://github.com/maillab/cloud-mail/tree/main?tab=MIT-1-ov-file" target="_blank" >
+            <img src="https://img.shields.io/badge/license-MIT-green" />
+        </a>    
+        <a href="https://github.com/maillab/cloud-mail/releases" target="_blank" >
+            <img src="https://img.shields.io/github/v/release/maillab/cloud-mail" alt="releases" />
+        </a>  
+        <a href="https://github.com/maillab/cloud-mail/issues" >
+            <img src="https://img.shields.io/github/issues/maillab/cloud-mail" alt="issues" />
+        </a>  
+        <a href="https://github.com/maillab/cloud-mail/stargazers" target="_blank">
+            <img src="https://img.shields.io/github/stars/maillab/cloud-mail" alt="stargazers" />
+        </a>  
+        <a href="https://github.com/maillab/cloud-mail/forks" target="_blank" >
+            <img src="https://img.shields.io/github/forks/maillab/cloud-mail" alt="forks" />
+        </a>
+    </p>
+    <p align="center">
+        <a href="https://trendshift.io/repositories/20459" target="_blank" >
+            <img src="https://trendshift.io/api/badge/repositories/20459" alt="trendshift" >
+        </a>
+    </p>
 </p>
 
-<div align="center">
-<h1>Cloud Mail</h1>
-</div>
-<div align="center">
-    <h4>Serverless 响应式邮箱服务，支持邮件发送，可部署到Cloudflare平台 🎉</h4> 
-</div>
-<div align="center">
-    <span>简体中文 | <a href="/README-en.md" style="margin-left: 5px">English </a></span>
-</div>
 
 ## 项目简介
 
-只需要一个域名，就可以创建多个不同的邮箱，类似各大邮箱平台，本项目可部署到 Cloudflare Workers ，降低服务器成本，搭建自己的邮箱服务
+只需要一个域名，就可以创建多个不同的邮箱，类似各大邮箱平台，本项目支持署到 Cloudflare Workers ，降低服务器成本，搭建自己的邮箱服务
 
 ## 项目展示
 
 - [在线演示](https://skymail.ink)<br>
 - [部署文档](https://doc.skymail.ink)<br>
-- [界面部署](https://doc.skymail.ink/guide/via-ui.html)
 
 | ![](/doc/demo/demo1.png) | ![](/doc/demo/demo2.png) |
 |-----------------------|-----------------------|
@@ -31,7 +48,7 @@
 
 ## 功能介绍
 
-- **💰 低成本使用**： 部署到 Cloudflare Workers 降低服务器成本
+- **💰 低成本使用**： 可部署到 Cloudflare Workers 降低服务器成本
 
 - **💻 响应式设计**：响应式布局自动适配PC和大部分手机端浏览器
 
@@ -45,7 +62,9 @@
 
 - **📡 开放API**：支持使用API批量生成用户，多条件查询邮件 
 
-- **📈 数据可视化**：使用Echarts对系统数据详情，用户邮件增长可视化显示
+- **🔢 验证码识别**：使用Workers AI，自动识别邮件验证码 
+
+- **📈 数据可视化**：使用ECharts对系统数据详情，用户邮件增长可视化显示
 
 - **🎨 个性化设置**：可以自定义网站标题，登录背景，透明度
 
@@ -57,7 +76,7 @@
 
 ## 技术栈
 
-- **Serverless**：[Cloudflare Workers](https://developers.cloudflare.com/workers/)
+- **平台**：[Cloudflare Workers](https://developers.cloudflare.com/workers/)
 
 - **Web框架**：[Hono](https://hono.dev/)
 
@@ -137,14 +156,3 @@ cloud-mail
 
 
 
-## 学校导航页（新增）
-- 登录后默认跳转到独立的“学校导航”页面 `/school`
-- 顶部展示：校徽 + 标题（右侧） + 三个主入口卡片：进入邮箱、学校官网、学生证生成
-- 背景图全宽铺满（无灰边），叠加渐变遮罩；卡片采用 App 风格，悬停时上浮并带阴影
-
-## v2.4.0 更新
-- 邮件发送正文中的图片统一转换为内嵌附件，兼容更多客户端
-- 支持设置“注册邮箱前缀最小位数”，注册/绑定/添加邮箱都会校验
-- 登录页新增 LinuxDo OAuth2，一键同步头像、等级并绑定邮箱
-- 修复移动端“全部邮件”工具栏图标重叠的问题
-- 修复 TG Bot 自定义域名前带 https:// 时无法查看邮件的 Bug

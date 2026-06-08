@@ -16,7 +16,7 @@ const routes = [
                 name: 'email',
                 component: () => import('@/views/email/index.vue'),
                 meta: {
-                    title: '收件箱',
+                    title: 'inbox',
                     name: 'email',
                     menu: true
                 }
@@ -53,11 +53,6 @@ const routes = [
             },
         ]
 
-    },
-    {
-        path: '/school',
-        name: 'school',
-        component: () => import('@/views/school/index.vue')
     },
     {
         path: '/login',
@@ -97,9 +92,11 @@ router.beforeEach((to, from, next) => {
         clearTimeout(timer)
     }
 
-    timer = setTimeout(() => {
-        NProgress.start()
-    }, first ? 200 : 100)
+    if (!first) {
+        timer = setTimeout(() => {
+            NProgress.start()
+        }, 100)
+    }
 
     const token = localStorage.getItem('token')
 
@@ -140,17 +137,25 @@ function loadBackground(next) {
             next()
         };
 
+        setTimeout(() => {
+            console.warn("背景加载超时，已放行");
+            next()
+        }, 3000)
+
     } else {
         next()
     }
-
 
 }
 
 router.afterEach((to) => {
 
     clearTimeout(timer)
-    NProgress.done();
+    if (first) {
+        removeLoading()
+    } else {
+        NProgress.done();
+    }
 
     const uiStore = useUiStore()
     if (to.meta.menu) {
@@ -167,5 +172,14 @@ router.afterEach((to) => {
 
     first = false
 })
+
+function removeLoading() {
+    const doc = document.getElementById('loading-first');
+    if (!doc) {
+        return;
+    }
+
+    doc.remove()
+}
 
 export default router
